@@ -1,0 +1,8 @@
+*************************************************************
+*   Name                        *   Port                    *
+*************************************************************
+    config-server                   8040
+    department-service-core         1002
+    edge-service                    9191
+    employee-service-core           1001
+    service-registry                8761

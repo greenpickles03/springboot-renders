@@ -1,0 +1,86 @@
+How to setup Microservice
+First Create a Service Registry
+* Dependency needed
+	-> spring-cloud-starter-netflix-eureka-server (Eureka Server)
+
+properties configuration;
+	server.port=8761
+	spring.application.name=service-registry
+	eureka.client.register-with-eureka=false
+	eureka.client.fetch-registry=false
+	eureka.client.service-url.defaultZone=http://localhost:8761/eureka/
+
+Second create a services
+* Dependency Needed
+	-> Spring Web
+	-> Lombok
+	-> Spring Data JPA(Java Persistence API) => Persist data in SQL stores using spring data and hibernate
+	-> Mysql Driver
+	-> Eureka Discovery Client
+	-> spring-cloud-config (Config Client)
+	-> Spring webflux // not yet tested
+
+basic properties configuration without service-config
+	spring.datasource.driver-class-name=
+	spring.datasource.url=
+	spring.datasource.username=
+	spring.datasource.password=
+	spring.jpa.hibernate.ddl-auto=
+	server.port=
+	spring.application.name=
+	management.endpoints.web.exposure.include=*
+	management.endpoints.health.show-details=always
+
+basic properties configuration with service-config
+
+	server.port=
+	spring.application.name=
+	management.endpoints.web.exposure.include=*
+	management.endpoints.health.show-details=always
+	spring.config.import=configserver:
+	spring.cloud.config.uri=http://localhost:8040
+
+note: on the main class add @EnableDiscoveryClient to 
+	be able register at the service registry
+
+Third create a config service
+* Dependency Need
+	-> spring-cloud-config-server (Config Server)
+
+properties configuration;
+	spring.config.name=config-server
+	server.port=8040
+	spring.profiles.active=native
+	management.endpoints.web.exposure.include=*
+	spring.cloud.config.server.native.search-locations=classpath:/common-config
+
+Note: common-config is the folder of all you services properties,
+	this folder usually created under resources folder.
+	also add @EnableDiscoveryClient on the main class
+
+Fourth create a edge-service(api gateway)
+* Dependency Need
+	-> Gateway
+	-> Eureka Discovery Client
+	-> String Boot Actuator
+
+properties configuration;
+	spring.application.name=edge-service
+	server.port=9191
+	eureka.instance.client.serviceUrl.defaultZone=http://localhost:8761/eureka/
+	management.endpoints.web.exposure.include=*
+	management.endpoints.health.show-details=always
+
+Note: you can also setup the gateway routes on the properties configuration of the edge-service(api gateway)
+	also add @EnableDiscoveryClient on the main class
+
+	Here is the example configuration of the gateway routes
+
+	spring.cloud.gateway.routes[0].id=employee-service-core
+	spring.cloud.gateway.routes[0].uri=lb://employee-service-core
+	spring.cloud.gateway.routes[0].predicates[0]=Path=/api/employee/**
+
+	spring.cloud.gateway.routes[1].id=department-service-core
+	spring.cloud.gateway.routes[1].uri=lb://department-service-core
+	spring.cloud.gateway.routes[1].predicates[0]=Path=/api/department/**
+	
